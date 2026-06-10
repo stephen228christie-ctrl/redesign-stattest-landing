@@ -1,4 +1,5 @@
 import { Eyebrow, Reveal } from "./ui";
+import RazorpayButton from "./RazorpayButton";
 
 const tiers = [
   {
@@ -9,9 +10,10 @@ const tiers = [
     cta: "Start for free",
     href: "/login?tab=signup",
     featured: false,
+    amountPaise: null,
     items: [
       ["Full test selector", true],
-      ["“Why this test?” explanation", true],
+      ['"Why this test?" explanation', true],
       ["APA write-up template", true],
       ["AI assistant", false],
       ["SPSS / jamovi steps", false],
@@ -24,8 +26,9 @@ const tiers = [
     cadence: "/mo",
     note: "Cancel anytime. Instant access.",
     cta: "Get Pro — ₹99/mo",
-    href: "https://stattest-landing.vercel.app/upgrade.html",
+    href: null,
     featured: true,
+    amountPaise: 9900,
     items: [
       ["Everything in Free", true],
       ["AI stats assistant", true],
@@ -41,8 +44,9 @@ const tiers = [
     cadence: " once",
     note: "3 months of full Pro. Pay once, no renewal.",
     cta: "Get Pass — ₹199",
-    href: "https://stattest-landing.vercel.app/upgrade.html",
+    href: null,
     featured: false,
+    amountPaise: 19900,
     items: [
       ["Everything in Pro", true],
       ["3 months — no renewal", true],
@@ -123,16 +127,28 @@ export default function Pricing() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href={t.href}
-                  className={`mt-8 inline-block px-5 py-3 text-center text-[0.92rem] font-bold transition-colors ${
-                    t.featured
-                      ? "bg-paper text-ink hover:bg-white"
-                      : "border border-line-strong hover:border-ink"
-                  }`}
-                >
-                  {t.cta}
-                </a>
+                <div className="mt-8">
+                  {t.amountPaise ? (
+                    <RazorpayButton
+                      amount={t.amountPaise}
+                      planName={t.name}
+                      className={`w-full px-5 py-3 text-center text-[0.92rem] font-bold transition-colors ${
+                        t.featured
+                          ? "bg-paper text-ink hover:bg-white"
+                          : "border border-line-strong hover:border-ink"
+                      }`}
+                    >
+                      {t.cta}
+                    </RazorpayButton>
+                  ) : (
+                    <a
+                      href={t.href!}
+                      className={`inline-block w-full px-5 py-3 text-center text-[0.92rem] font-bold transition-colors border border-line-strong hover:border-ink`}
+                    >
+                      {t.cta}
+                    </a>
+                  )}
+                </div>
               </div>
             </Reveal>
           ))}
