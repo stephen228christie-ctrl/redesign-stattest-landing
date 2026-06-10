@@ -6,9 +6,7 @@ const SUPABASE_ANON_KEY =
 
 export const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    // PKCE is required for server-side / SSR-style apps like Next.js
     flowType: "pkce",
-    // Store session in localStorage so it survives page navigations
     storage: typeof window !== "undefined" ? window.localStorage : undefined,
     persistSession: true,
     detectSessionInUrl: true,
@@ -16,3 +14,6 @@ export const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 export const FREE_LIMIT = 3;
+
+// The new site URL — used as the emailRedirectTo base
+export const SITE_URL = "https://redesign-stattest-landing.vercel.app";

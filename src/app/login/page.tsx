@@ -2,16 +2,15 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { sb } from "@/lib/supabase";
+import { sb, SITE_URL } from "@/lib/supabase";
 
 type Tab = "login" | "signup" | "forgot";
 
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-const CALLBACK_URL =
-  typeof window !== "undefined"
-    ? `${window.location.origin}/auth/callback`
-    : "https://redesign-stattest-landing.vercel.app/auth/callback";
+// Always use the explicit new site URL — never window.location.origin
+// because Supabase ignores emailRedirectTo if it doesn't match the Site URL
+const CALLBACK = `${SITE_URL}/auth/callback`;
 
 function strength(val: string) {
   let score = 0;
@@ -30,44 +29,28 @@ function strength(val: string) {
 }
 
 function Field({
-  label,
-  type = "text",
-  value,
-  onChange,
-  error,
-  autoComplete,
+  label, type = "text", value, onChange, error, autoComplete,
 }: {
-  label: string;
-  type?: string;
-  value: string;
-  onChange: (v: string) => void;
-  error?: string | null;
-  autoComplete?: string;
+  label: string; type?: string; value: string;
+  onChange: (v: string) => void; error?: string | null; autoComplete?: string;
 }) {
   const [show, setShow] = useState(false);
   const isPw = type === "password";
   return (
     <label className="block">
-      <span className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-ink-soft">
-        {label}
-      </span>
+      <span className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-ink-soft">{label}</span>
       <span className="relative mt-1.5 block">
         <input
           type={isPw && show ? "text" : type}
           value={value}
           autoComplete={autoComplete}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full border bg-paper px-3.5 py-2.5 text-[0.95rem] outline-none transition-colors focus:border-plot ${
-            error ? "border-sig" : "border-line-strong"
-          }`}
+          className={`w-full border bg-paper px-3.5 py-2.5 text-[0.95rem] outline-none transition-colors focus:border-plot ${error ? "border-sig" : "border-line-strong"}`}
         />
         {isPw && (
-          <button
-            type="button"
-            onClick={() => setShow(!show)}
+          <button type="button" onClick={() => setShow(!show)}
             aria-label={show ? "Hide password" : "Show password"}
-            className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-ink-soft"
-          >
+            className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-xs text-ink-soft">
             {show ? "hide" : "show"}
           </button>
         )}
@@ -80,9 +63,7 @@ function Field({
 function LoginInner() {
   const params = useSearchParams();
   const initialTab = (params.get("tab") as Tab) || "login";
-  const [tab, setTab] = useState<Tab>(
-    ["login", "signup", "forgot"].includes(initialTab) ? initialTab : "login"
-  );
+  const [tab, setTab] = useState<Tab>(["login","signup","forgot"].includes(initialTab) ? initialTab : "login");
   const returnUrl = params.get("return") || "/dashboard";
 
   const [email, setEmail] = useState("");
@@ -95,12 +76,12 @@ function LoginInner() {
   const [forgotSent, setForgotSent] = useState(false);
   const [signupSent, setSignupSent] = useState(false);
 
-  // Redirect if already logged in, or when a session arrives (e.g. magic link)
   useEffect(() => {
+    // If already logged in, go straight to dashboard
     sb.auth.getSession().then(({ data: { session } }) => {
       if (session) window.location.href = returnUrl;
     });
-
+    // Listen for sign-in events (handles auto-confirm case)
     const { data: { subscription } } = sb.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session) {
         window.location.href = returnUrl;
@@ -110,31 +91,25 @@ function LoginInner() {
   }, [returnUrl]);
 
   function switchTab(t: Tab) {
-    setTab(t);
-    setAlert(null);
-    setErrors({});
-    setForgotSent(false);
-    setSignupSent(false);
+    setTab(t); setAlert(null); setErrors({});
+    setForgotSent(false); setSignupSent(false);
   }
 
   async function handleGoogle() {
     const { error } = await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: CALLBACK },
     });
     if (error) setAlert(error.message);
   }
 
   async function handleLogin() {
-    if (!validEmail(email) || !pw) {
-      setAlert("Please enter your email and password.");
-      return;
-    }
+    if (!validEmail(email) || !pw) { setAlert("Please enter your email and password."); return; }
     setBusy(true);
     const { error } = await sb.auth.signInWithPassword({ email, password: pw });
     setBusy(false);
     if (error) { setAlert(error.message); return; }
-    // onAuthStateChange above will redirect
+    // onAuthStateChange handles the redirect
   }
 
   async function handleSignup() {
@@ -146,30 +121,29 @@ function LoginInner() {
     setErrors(errs);
     if (Object.values(errs).some(Boolean)) return;
     setBusy(true);
-    const { error } = await sb.auth.signUp({
-      email,
-      password: pw,
+    const { data, error } = await sb.auth.signUp({
+      email, password: pw,
       options: {
         data: { name: first.trim() + (last.trim() ? " " + last.trim() : "") },
-        // After email confirmation, Supabase sends user here
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: CALLBACK,
       },
     });
     setBusy(false);
     if (error) { setAlert(error.message); return; }
-    // Some Supabase projects auto-confirm (no email needed) — session fires instantly
-    // via onAuthStateChange. If email confirmation IS required, show a message.
+    // If Supabase auto-confirmed (no email needed), session exists immediately
+    if (data.session) {
+      window.location.href = returnUrl;
+      return;
+    }
+    // Email confirmation required — show "check inbox" message
     setSignupSent(true);
   }
 
   async function handleForgot() {
-    if (!validEmail(email)) {
-      setAlert("Please enter a valid email address.");
-      return;
-    }
+    if (!validEmail(email)) { setAlert("Please enter a valid email address."); return; }
     setBusy(true);
     const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: CALLBACK,
     });
     setBusy(false);
     if (error) { setAlert(error.message); return; }
@@ -194,24 +168,19 @@ function LoginInner() {
         <div className="w-full max-w-md">
           <div className="border border-line bg-paper p-7 sm:p-9">
 
-            {/* ── Signup confirmation sent ── */}
             {signupSent ? (
-              <div className="text-center py-4">
+              <div className="py-4 text-center">
                 <p aria-hidden className="text-4xl">📬</p>
                 <h1 className="mt-4 font-display text-2xl font-semibold">Check your inbox</h1>
-                <p className="mt-3 text-sm text-ink-soft leading-relaxed">
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                   We&rsquo;ve sent a confirmation link to <strong>{email}</strong>.
                   Click it and you&rsquo;ll land straight on your dashboard.
                 </p>
                 <p className="mt-4 text-xs text-ink-soft">
                   No email? Check your spam, or{" "}
-                  <button
-                    onClick={() => { setSignupSent(false); setAlert(null); }}
-                    className="text-plot underline"
-                  >
+                  <button onClick={() => { setSignupSent(false); setAlert(null); }} className="text-plot underline">
                     try again
-                  </button>
-                  .
+                  </button>.
                 </p>
               </div>
 
@@ -224,33 +193,21 @@ function LoginInner() {
                   {tab === "login" ? "Log in" : "Create your account"}
                 </h1>
                 <p className="mt-2 text-sm text-ink-soft">
-                  {tab === "login"
-                    ? "Access your analyses and Pro features."
-                    : "3 full analyses included, no card needed."}
+                  {tab === "login" ? "Access your analyses and Pro features." : "3 full analyses included, no card needed."}
                 </p>
 
-                {/* Tab switch */}
                 <div className="mt-6 grid grid-cols-2 border border-line" role="tablist">
                   {(["login", "signup"] as Tab[]).map((t) => (
-                    <button
-                      key={t}
-                      role="tab"
-                      aria-selected={tab === t}
-                      onClick={() => switchTab(t)}
-                      className={`py-2.5 font-mono text-[0.74rem] uppercase tracking-[0.14em] ${
-                        tab === t ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
-                      }`}
-                    >
+                    <button key={t} role="tab" aria-selected={tab === t} onClick={() => switchTab(t)}
+                      className={`py-2.5 font-mono text-[0.74rem] uppercase tracking-[0.14em] ${tab === t ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}>
                       {t === "login" ? "Log in" : "Sign up"}
                     </button>
                   ))}
                 </div>
 
                 <div className="mt-6">
-                  <button
-                    onClick={handleGoogle}
-                    className="w-full border border-line-strong px-5 py-3 text-sm font-bold transition-colors hover:border-ink"
-                  >
+                  <button onClick={handleGoogle}
+                    className="w-full border border-line-strong px-5 py-3 text-sm font-bold transition-colors hover:border-ink">
                     {tab === "login" ? "Continue with Google" : "Sign up with Google"}
                   </button>
                   <div className="my-5 flex items-center gap-3" aria-hidden>
@@ -261,9 +218,7 @@ function LoginInner() {
                 </div>
 
                 {alert && (
-                  <p role="alert" className="mb-4 border-l-2 border-sig bg-sig/5 px-3.5 py-2.5 text-sm">
-                    {alert}
-                  </p>
+                  <p role="alert" className="mb-4 border-l-2 border-sig bg-sig/5 px-3.5 py-2.5 text-sm">{alert}</p>
                 )}
 
                 {tab === "login" ? (
@@ -275,18 +230,13 @@ function LoginInner() {
                         Forgot password?
                       </button>
                     </div>
-                    <button
-                      onClick={handleLogin}
-                      disabled={busy}
-                      className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50"
-                    >
+                    <button onClick={handleLogin} disabled={busy}
+                      className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50">
                       {busy ? "Logging in…" : "Log in"}
                     </button>
                     <p className="text-center text-sm text-ink-soft">
                       Don&rsquo;t have an account?{" "}
-                      <button onClick={() => switchTab("signup")} className="font-bold text-plot hover:underline">
-                        Sign up free
-                      </button>
+                      <button onClick={() => switchTab("signup")} className="font-bold text-plot hover:underline">Sign up free</button>
                     </p>
                   </div>
                 ) : (
@@ -307,11 +257,8 @@ function LoginInner() {
                         </p>
                       )}
                     </div>
-                    <button
-                      onClick={handleSignup}
-                      disabled={busy}
-                      className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50"
-                    >
+                    <button onClick={handleSignup} disabled={busy}
+                      className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50">
                       {busy ? "Creating account…" : "Create free account"}
                     </button>
                     <p className="text-center text-xs text-ink-soft">
@@ -319,9 +266,7 @@ function LoginInner() {
                     </p>
                     <p className="text-center text-sm text-ink-soft">
                       Already have an account?{" "}
-                      <button onClick={() => switchTab("login")} className="font-bold text-plot hover:underline">
-                        Log in
-                      </button>
+                      <button onClick={() => switchTab("login")} className="font-bold text-plot hover:underline">Log in</button>
                     </p>
                   </div>
                 )}
@@ -335,21 +280,12 @@ function LoginInner() {
                 {!forgotSent ? (
                   <>
                     <h1 className="mt-4 font-display text-3xl font-semibold">Reset your password</h1>
-                    <p className="mt-2 text-sm text-ink-soft">
-                      Enter your email and we&rsquo;ll send a reset link.
-                    </p>
-                    {alert && (
-                      <p role="alert" className="mt-4 border-l-2 border-sig bg-sig/5 px-3.5 py-2.5 text-sm">
-                        {alert}
-                      </p>
-                    )}
+                    <p className="mt-2 text-sm text-ink-soft">Enter your email and we&rsquo;ll send a reset link.</p>
+                    {alert && <p role="alert" className="mt-4 border-l-2 border-sig bg-sig/5 px-3.5 py-2.5 text-sm">{alert}</p>}
                     <div className="mt-6 space-y-4">
                       <Field label="Email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
-                      <button
-                        onClick={handleForgot}
-                        disabled={busy}
-                        className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50"
-                      >
+                      <button onClick={handleForgot} disabled={busy}
+                        className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50">
                         {busy ? "Sending…" : "Send reset link"}
                       </button>
                     </div>
@@ -366,7 +302,6 @@ function LoginInner() {
               </>
             )}
           </div>
-
           <p className="mt-5 text-center font-mono text-[0.68rem] text-ink-soft">
             Built for psychology dissertations · APA 7 · Field (2018)
           </p>
