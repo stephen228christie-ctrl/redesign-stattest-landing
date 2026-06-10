@@ -3,41 +3,37 @@
 import { useEffect } from "react";
 import { sb } from "@/lib/supabase";
 
-/**
- * Supabase sends users here after:
- *  - Email confirmation (signup)
- *  - Magic link login
- *  - Password reset
- *  - Google / OAuth redirect
- *
- * The token arrives either as ?code= (PKCE flow) or as a #access_token
- * fragment. We exchange it for a session, then forward to /dashboard.
- */
 export default function AuthCallback() {
   useEffect(() => {
     async function handle() {
-      // PKCE code flow (most common with Next.js)
+      // Give supabase-js a moment to auto-detect the token from the URL
+      // (it reads both ?code= for PKCE and #access_token for implicit flow)
+      await new Promise((r) => setTimeout(r, 200));
+
+      // Try PKCE code exchange first
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
-
       if (code) {
-        await sb.auth.exchangeCodeForSession(code);
-        window.location.replace("/dashboard");
-        return;
+        const { error } = await sb.auth.exchangeCodeForSession(code);
+        if (!error) { window.location.replace("/dashboard"); return; }
       }
 
-      // Implicit / hash flow (older Supabase default)
+      // Implicit hash flow — supabase-js picks it up via detectSessionInUrl
       const hash = window.location.hash;
-      if (hash && hash.includes("access_token")) {
-        // Let supabase-js pick up the hash automatically
-        const { data } = await sb.auth.getSession();
-        if (data.session) {
-          window.location.replace("/dashboard");
-          return;
+      if (hash.includes("access_token") || hash.includes("type=signup")) {
+        // Poll briefly — supabase-js processes the hash asynchronously
+        for (let i = 0; i < 10; i++) {
+          const { data } = await sb.auth.getSession();
+          if (data.session) { window.location.replace("/dashboard"); return; }
+          await new Promise((r) => setTimeout(r, 150));
         }
       }
 
-      // No token — likely landed here by accident
+      // Fallback — check if a session already exists (e.g. auto-confirm)
+      const { data } = await sb.auth.getSession();
+      if (data.session) { window.location.replace("/dashboard"); return; }
+
+      // Nothing worked — send back to login
       window.location.replace("/login");
     }
 
@@ -50,15 +46,16 @@ export default function AuthCallback() {
         <p className="font-mono text-[0.72rem] uppercase tracking-[0.2em] text-ink-soft">
           Verifying your account…
         </p>
-        <div className="mt-4 flex justify-center gap-1">
+        <div className="mt-4 flex justify-center gap-1.5">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="h-2 w-2 bg-ink animate-pulse"
-              style={{ animationDelay: `${i * 0.15}s` }}
+              className="h-2.5 w-2.5 bg-ink animate-pulse rounded-full"
+              style={{ animationDelay: `${i * 0.18}s` }}
             />
           ))}
         </div>
+        <p className="mt-5 text-xs text-ink-soft">Redirecting you to your dashboard…</p>
       </div>
     </div>
   );

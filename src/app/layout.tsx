@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "StatTest Selector — Find the right statistical test, instantly",
   description:
     "Answer 5 questions about your study. Get the exact statistical test, an APA 7th edition write-up, and a justification your supervisor can't argue with. Built for psychology dissertations.",
-  metadataBase: new URL("https://stattest-landing.vercel.app"),
+  metadataBase: new URL("https://redesign-stattest-landing.vercel.app"),
   openGraph: {
     title: "StatTest Selector — the right statistical test, instantly",
     description:
