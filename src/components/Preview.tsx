@@ -56,7 +56,7 @@ export default function Preview() {
               outcomes, and assumption checks.
             </p>
             <a
-              href="/app.html"
+              href="/app"
               className="mt-7 inline-flex items-center gap-2 border border-paper/30 px-5 py-2.5 text-[0.92rem] font-bold transition-colors hover:border-paper"
             >
               Open the full selector <span aria-hidden className="font-mono">→</span>

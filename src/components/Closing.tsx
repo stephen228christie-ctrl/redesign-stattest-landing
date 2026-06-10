@@ -15,7 +15,7 @@ export function FinalCTA() {
             Start free in 30 seconds. No account needed.
           </p>
           <div className="mt-9 flex justify-center">
-            <ButtonPrimary href="/app.html" dark>
+            <ButtonPrimary href="/app" dark>
               Find my statistical test
             </ButtonPrimary>
           </div>

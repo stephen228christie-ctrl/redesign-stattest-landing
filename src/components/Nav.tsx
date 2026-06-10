@@ -28,11 +28,11 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <a href="/login.html" className="tick-link text-[0.92rem] text-ink-soft hover:text-ink">
+          <a href="/login" className="tick-link text-[0.92rem] text-ink-soft hover:text-ink">
             Log in
           </a>
           <a
-            href="/login.html?tab=signup"
+            href="/login?tab=signup"
             className="bg-ink px-4 py-2 text-[0.88rem] font-bold text-paper transition-colors hover:bg-night-soft"
           >
             Sign up free
@@ -61,9 +61,9 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <a href="/login.html" className="block py-2.5 text-ink-soft">Log in</a>
+          <a href="/login" className="block py-2.5 text-ink-soft">Log in</a>
           <a
-            href="/login.html?tab=signup"
+            href="/login?tab=signup"
             className="mt-2 inline-block bg-ink px-4 py-2 font-bold text-paper"
           >
             Sign up free

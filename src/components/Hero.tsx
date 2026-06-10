@@ -65,7 +65,7 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.24, ease }}
             className="mt-9 flex flex-wrap items-center gap-4"
           >
-            <ButtonPrimary href="/app.html">Find my test</ButtonPrimary>
+            <ButtonPrimary href="/app">Find my test</ButtonPrimary>
             <ButtonGhost href="#pricing">See Pro features</ButtonGhost>
           </motion.div>
 

@@ -7,7 +7,7 @@ const tiers = [
     cadence: "",
     note: "Always free. No card required.",
     cta: "Start for free",
-    href: "/login.html?tab=signup",
+    href: "/login?tab=signup",
     featured: false,
     items: [
       ["Full test selector", true],
@@ -24,7 +24,7 @@ const tiers = [
     cadence: "/mo",
     note: "Cancel anytime. Instant access.",
     cta: "Get Pro — ₹99/mo",
-    href: "/upgrade.html",
+    href: "https://stattest-landing.vercel.app/upgrade.html",
     featured: true,
     items: [
       ["Everything in Free", true],
@@ -41,7 +41,7 @@ const tiers = [
     cadence: " once",
     note: "3 months of full Pro. Pay once, no renewal.",
     cta: "Get Pass — ₹199",
-    href: "/upgrade.html",
+    href: "https://stattest-landing.vercel.app/upgrade.html",
     featured: false,
     items: [
       ["Everything in Pro", true],

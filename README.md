@@ -32,3 +32,13 @@ Push to GitHub and import the repo in [Vercel](https://vercel.com/new) — no co
 - Visible keyboard focus, skip link, semantic landmarks, labelled table marks
 - Three.js chunk is dynamically imported; first load JS ≈ 129 kB
 - Native `<details>` FAQ — works without JavaScript
+
+## App pages (ported from the original site)
+
+- **/app** — the full test-selector quiz: the complete 13-test decision tree, guest signup wall, 3-analysis free limit, result tabs (Why / Run it / Write up / G*Power / Assumptions), APA copy buttons, and auto-save to history.
+- **/login** — log in, sign up, and password reset (Supabase email + Google OAuth).
+- **/dashboard** — greeting, plan, usage stats, recent analyses, account summary, sign out.
+
+All three connect to the same Supabase project as the original site, so existing accounts and saved analyses keep working. The decision tree in `src/lib/quiz-data.ts` was extracted verbatim from the original `app.html`.
+
+> **Note:** after deploying, add the new Vercel domain to Supabase → Authentication → URL Configuration (Site URL / Redirect URLs), otherwise Google OAuth and password-reset links will redirect to the old domain.
