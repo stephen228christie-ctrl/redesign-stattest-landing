@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { sb } from "@/lib/supabase";
 
 declare global {
   interface Window {
@@ -31,12 +33,23 @@ function loadScript(src: string): Promise<boolean> {
 }
 
 export default function RazorpayButton({ amount, planName, className, children }: Props) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleClick() {
     setError(null);
     setLoading(true);
+
+    const {
+      data: { session },
+    } = await sb.auth.getSession();
+
+    if (!session) {
+      router.push("/login?tab=signup");
+      setLoading(false);
+      return;
+    }
 
     const loaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
     if (!loaded) {
