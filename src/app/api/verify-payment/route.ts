@@ -28,27 +28,40 @@ export async function POST(req: NextRequest) {
     }
 
     // Signature is valid — this is the only path that can mark a user as paid.
-    // Upgrade the buyer's plan, identified by their Supabase access token.
     if (access_token && (plan === "pro" || plan === "pass")) {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        global: { headers: { Authorization: `Bearer ${access_token}` } },
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (!serviceKey) {
+        return NextResponse.json(
+          { success: true, plan_updated: false, warning: "Server not configured for plan activation" },
+          { status: 200 }
+        );
+      }
+
+      // Validate the token with the public client to learn *who* paid. This
+      // only reads identity; it cannot write the plan (RLS forbids that now).
+      const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: { persistSession: false },
       });
-
       const {
         data: { user },
-      } = await supabase.auth.getUser(access_token);
+      } = await authClient.auth.getUser(access_token);
 
       if (user) {
-        const { error: updateError } = await supabase
+        // Perform the actual plan write with the service-role key, which
+        // bypasses RLS. Because this key lives only on the server and runs
+        // only after the signature check above, a verified payment is the
+        // sole way a user can become 'pro'/'pass' — the browser is never
+        // trusted to set its own plan.
+        const admin = createClient(SUPABASE_URL, serviceKey, {
+          auth: { persistSession: false },
+        });
+
+        const { error: updateError } = await admin
           .from("profiles")
           .update({ plan })
           .eq("id", user.id);
 
         if (updateError) {
-          // Payment is genuine but the plan write failed — surface it so the
-          // client can tell the user to contact support rather than silently
-          // pretending the upgrade went through.
           return NextResponse.json(
             { success: true, plan_updated: false, warning: updateError.message },
             { status: 200 }
