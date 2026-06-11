@@ -5,31 +5,26 @@ const steps = [
     n: "1",
     title: "Describe your study",
     body: "Answer simple questions about your research objective, study design, and the type of data you collected. No statistics knowledge required.",
-    tier: "Free for everyone",
   },
   {
     n: "2",
     title: "Get your test recommendation",
     body: "StatTest recommends the exact test for your design — with a clear explanation of why, common pitfalls, and the alternative test if assumptions fail.",
-    tier: "Free for everyone",
   },
   {
     n: "3",
     title: "Copy your APA write-up",
     body: "A fill-in-the-blanks APA 7th-edition results template, ready to paste into your dissertation. No formatting panic.",
-    tier: "Free for everyone",
   },
   {
     n: "4",
-    title: "Run it & ask the AI assistant",
-    body: "Exact SPSS and jamovi click-paths, a G*Power walkthrough, and an AI assistant for follow-up questions — scoped entirely to statistics.",
-    tier: "Pro",
+    title: "Run it in your software",
+    body: "Exact SPSS and jamovi click-paths for your test — plus the same steps work in JASP. Click exactly what it says, no translation needed.",
   },
   {
     n: "5",
-    title: "Generate your supervisor report",
-    body: "One click writes a paragraph justifying your chosen test in academic language. Paste it into your proposal or ethics form.",
-    tier: "Pro",
+    title: "Check power & assumptions",
+    body: "A G*Power walkthrough for your sample-size justification, and a numbered assumption checklist to verify before you trust the output.",
   },
 ];
 
@@ -58,18 +53,12 @@ export default function HowItWorks() {
               <li className="relative grid grid-cols-1 gap-2 py-7 pl-8 sm:grid-cols-12 sm:gap-6 lg:pl-12">
                 <span
                   aria-hidden
-                  className={`absolute -left-[5px] top-9 h-[9px] w-[9px] rounded-full ${
-                    s.tier === "Pro" ? "bg-sig" : "bg-plot"
-                  }`}
+                  className="absolute -left-[5px] top-9 h-[9px] w-[9px] rounded-full bg-plot"
                 />
                 <div className="sm:col-span-3 lg:col-span-2">
                   <span className="font-mono text-sm text-ink-soft">step {s.n} / 5</span>
-                  <p
-                    className={`mt-1 inline-block font-mono text-[0.68rem] uppercase tracking-[0.18em] sm:block ${
-                      s.tier === "Pro" ? "text-sig" : "text-plot"
-                    }`}
-                  >
-                    {s.tier}
+                  <p className="mt-1 inline-block font-mono text-[0.68rem] uppercase tracking-[0.18em] text-plot sm:block">
+                    Every analysis
                   </p>
                 </div>
                 <div className="sm:col-span-9 lg:col-span-7">

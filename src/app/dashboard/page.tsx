@@ -174,8 +174,8 @@ export default function Dashboard() {
                   You&rsquo;ve used {total} of {FREE_LIMIT} free analyses
                 </p>
                 <p className="mt-1 max-w-md text-sm text-paper/70">
-                  Upgrade to Pro for unlimited analyses, APA write-ups, SPSS
-                  steps, and the AI assistant.
+                  Upgrade to Pro for unlimited analyses — every result includes
+                  the full explanation, APA write-up, and SPSS steps.
                 </p>
                 <div className="mt-4 h-1.5 w-56 max-w-full bg-paper/15">
                   <div

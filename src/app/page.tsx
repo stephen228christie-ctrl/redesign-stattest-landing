@@ -4,7 +4,6 @@ import Problem from "@/components/Problem";
 import HowItWorks from "@/components/HowItWorks";
 import Preview from "@/components/Preview";
 import Features from "@/components/Features";
-import Testimonials from "@/components/Testimonials";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import { FinalCTA, Footer } from "@/components/Closing";
@@ -25,7 +24,6 @@ export default function Home() {
         <HowItWorks />
         <Preview />
         <Features />
-        <Testimonials />
         <Pricing />
         <FAQ />
         <FinalCTA />

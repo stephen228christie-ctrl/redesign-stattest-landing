@@ -12,12 +12,12 @@ const tiers = [
     featured: false,
     plan: null,
     items: [
-      ["Full test selector", true],
+      ["3 full analyses included", true],
+      ["Full test selector — all 20+ tests", true],
       ['"Why this test?" explanation', true],
       ["APA write-up template", true],
-      ["AI assistant", false],
-      ["SPSS / jamovi steps", false],
-      ["Supervisor report", false],
+      ["SPSS / jamovi steps", true],
+      ["Unlimited analyses", false],
     ] as [string, boolean][],
   },
   {
@@ -31,8 +31,8 @@ const tiers = [
     plan: "pro" as const,
     items: [
       ["Everything in Free", true],
-      ["AI stats assistant", true],
-      ["Supervisor report", true],
+      ["Unlimited analyses", true],
+      ["Plain-English test explanations", true],
       ["SPSS & jamovi steps", true],
       ["G*Power walkthrough", true],
       ["Full assumption checklist", true],
@@ -61,7 +61,7 @@ export default function Pricing() {
     <section id="pricing" className="border-b border-line">
       <div className="mx-auto max-w-wrap px-5 py-20 md:px-8 lg:py-28">
         <Reveal>
-          <Eyebrow index="6" label="Pricing" />
+          <Eyebrow index="5" label="Pricing" />
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <h2 className="max-w-xl font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
               Honest pricing. No annual trap.
@@ -155,7 +155,7 @@ export default function Pricing() {
         </div>
 
         <p className="mt-6 text-center font-mono text-[0.72rem] text-ink-soft">
-          Razorpay secure payment · India-first · Trusted by psychology students
+          Razorpay secure payment · India-first · Made for psychology students
         </p>
       </div>
     </section>

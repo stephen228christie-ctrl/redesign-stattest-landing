@@ -344,12 +344,12 @@ function Paywall({ test, onNew }: { test: TestInfo; onNew: () => void }) {
       </h1>
       <p className="mx-auto mt-3 max-w-md text-ink-soft">
         Your recommended test is ready —{" "}
-        <strong className="text-ink">{test.n}</strong>. Upgrade to Pro for
-        unlimited analyses, full explanations, APA write-ups, SPSS steps, and
-        the AI assistant.
+        <strong className="text-ink">{test.n}</strong>. Upgrade for unlimited
+        analyses and unlock the full result: explanation, APA write-up, SPSS
+        steps, and the G*Power guide.
       </p>
       <ul className="mx-auto mt-6 grid max-w-md gap-2 text-left text-sm">
-        {["Why this test?", "Assumptions", "APA write-up", "SPSS steps", "G*Power guide", "AI assistant"].map(
+        {["Why this test?", "Assumptions", "APA write-up", "SPSS steps", "G*Power guide"].map(
           (t) => (
             <li key={t} className="flex gap-2 text-ink-soft">
               <span aria-hidden>🔒</span> {t}
@@ -571,12 +571,24 @@ function Result({
 
           {tab === "power" && (
             <div className="space-y-5 text-[0.95rem] leading-relaxed">
-              <Block label="G*Power path">
+              <Block label="What is G*Power?">
+                G*Power is a free program that answers one question examiners
+                always ask: <em>how many participants do you need?</em> Run it{" "}
+                <strong>before</strong> collecting data (an &ldquo;a priori power
+                analysis&rdquo;) and it tells you the minimum sample size for
+                your test — proof in your methods chapter that your N was
+                planned, not guessed. You give it three things: your alpha
+                (almost always .05), the power you want (.80 minimum), and the
+                effect size you expect based on past studies.
+              </Block>
+              <Block label="G*Power path for this test">
                 <span className="font-mono text-[0.85rem]">{tt.gp || "Check G*Power documentation."}</span>
               </Block>
               <Note tone="tip">
-                Required inputs: α (usually .05), Power (aim for .80 minimum; .90 is increasingly
-                expected), and Effect Size from prior literature.
+                In G*Power: Test family → Statistical test, then follow the path
+                above. Aim for power of .80 minimum — .90 is increasingly
+                expected. Take your effect size from a similar published study
+                or a meta-analysis in your area.
               </Note>
               <Block label="Effect size for this test">{tt.eff}</Block>
               <p className="text-center font-mono text-[0.7rem] text-ink-soft">

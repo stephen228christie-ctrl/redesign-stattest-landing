@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "StatTest Selector — the right statistical test, instantly",
     description:
-      "From research question to defensible test choice in minutes. APA 7 templates, SPSS & jamovi steps, supervisor reports.",
+      "From research question to defensible test choice in minutes. APA 7 templates, SPSS & jamovi steps, G*Power walkthroughs.",
     type: "website",
   },
 };

@@ -1,18 +1,19 @@
 import { Eyebrow, Reveal } from "./ui";
 
-const rows: [string, boolean, boolean][] = [
+const rows: [string, boolean | string, boolean | string][] = [
+  ["Analyses included", "3", "Unlimited"],
   ["Test selector — all 20+ tests", true, true],
   ["“Why this test?” explanation", true, true],
   ["APA 7th-edition write-up template", true, true],
   ["Alternative test comparison", true, true],
-  ["SPSS & jamovi step-by-step guide", false, true],
-  ["G*Power path & settings", false, true],
-  ["Full assumption checklist", false, true],
-  ["AI stats assistant (follow-up Q&A)", false, true],
-  ["Supervisor justification report", false, true],
+  ["SPSS & jamovi step-by-step guide", true, true],
+  ["G*Power path & settings", true, true],
+  ["Full assumption checklist", true, true],
 ];
 
-function Mark({ on, label }: { on: boolean; label: string }) {
+function Mark({ on, label }: { on: boolean | string; label: string }) {
+  if (typeof on === "string")
+    return <span className="font-mono text-[0.78rem] font-medium">{on}</span>;
   return on ? (
     <span className="text-plot" aria-label={`Included: ${label}`}>✓</span>
   ) : (
@@ -31,10 +32,10 @@ export default function Features() {
               Everything you need, nothing you don&rsquo;t.
             </h2>
             <p className="mt-5 leading-relaxed text-ink-soft">
-              The free tier identifies your test and writes the APA template —
-              the core decision, free forever. Pro is for executing the
-              analysis: software steps, power analysis, assumptions, and a
-              report for your supervisor.
+              Every analysis is complete — the test recommendation, the
+              reasoning, the APA template, the software steps, and the power
+              analysis. Free gives you 3 full analyses; Pro simply removes
+              the limit for as long as your pass runs.
             </p>
           </Reveal>
         </div>

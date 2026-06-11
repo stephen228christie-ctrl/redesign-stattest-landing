@@ -7,7 +7,7 @@ const faqs = [
   },
   {
     q: "Is the free tier actually useful or just a teaser?",
-    a: "The free tier gives you the test recommendation and the APA write-up template — that's the core value. Pro adds the AI assistant, SPSS/jamovi steps, G*Power guide, and supervisor report. Free is genuinely useful. Pro is for when you need to execute the analysis, not just identify it.",
+    a: "Genuinely useful — every free analysis is complete: the test recommendation, the full explanation, the APA write-up template, SPSS/jamovi steps, and the G*Power guide. You get 3 full analyses free. Pro doesn't unlock hidden features — it simply removes the limit, which matters once you're iterating on your design or helping coursemates.",
   },
   {
     q: "What if I'm on JASP, not SPSS or jamovi?",
@@ -29,7 +29,7 @@ export default function FAQ() {
       <div className="mx-auto grid max-w-wrap grid-cols-1 gap-12 px-5 py-20 md:px-8 lg:grid-cols-12 lg:py-28">
         <div className="lg:col-span-4">
           <Reveal>
-            <Eyebrow index="7" label="Discussion" />
+            <Eyebrow index="6" label="Discussion" />
             <h2 className="mt-4 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
               Questions you&rsquo;re probably thinking.
             </h2>
