@@ -51,6 +51,9 @@ export default function RazorpayButton({ amount, planName, className, children }
       return;
     }
 
+    // Map the plan to the code stored in the profiles table.
+    const plan = planName.toLowerCase().includes("pass") ? "pass" : "pro";
+
     const loaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
     if (!loaded) {
       setError("Failed to load payment gateway. Please try again.");
@@ -88,10 +91,21 @@ export default function RazorpayButton({ amount, planName, className, children }
             const verify = await fetch("/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(response),
+              body: JSON.stringify({
+                ...response,
+                access_token: session.access_token,
+                plan,
+              }),
             });
             const result = await verify.json();
             if (verify.ok && result.success) {
+              if (result.plan_updated === false) {
+                setError(
+                  "Payment received, but we couldn't activate your plan. Please contact support."
+                );
+                setLoading(false);
+                return;
+              }
               window.location.href = "/dashboard";
             } else {
               setError("Payment verification failed. Contact support.");
