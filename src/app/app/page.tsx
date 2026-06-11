@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { User } from "@supabase/supabase-js";
 import AppNav from "@/components/AppNav";
+import RazorpayButton from "@/components/RazorpayButton";
 import { sb, FREE_LIMIT } from "@/lib/supabase";
 import {
   Answers,
@@ -23,8 +24,6 @@ const TABS: [TabId, string][] = [
   ["power", "G*Power"],
   ["ass", "Assumptions"],
 ];
-
-const UPGRADE_URL = "https://stattest-landing.vercel.app/upgrade.html";
 
 export default function QuizApp() {
   const [user, setUser] = useState<User | null>(null);
@@ -358,12 +357,12 @@ function Paywall({ test, onNew }: { test: TestInfo; onNew: () => void }) {
         )}
       </ul>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <a href={UPGRADE_URL} className="bg-ink px-6 py-3 text-sm font-bold text-paper hover:bg-night-soft">
+        <RazorpayButton amount={9900} planName="Pro Monthly" className="bg-ink px-6 py-3 text-sm font-bold text-paper hover:bg-night-soft">
           Upgrade — ₹99/month
-        </a>
-        <a href={UPGRADE_URL} className="border border-line-strong px-6 py-3 text-sm font-bold hover:border-ink">
+        </RazorpayButton>
+        <RazorpayButton amount={19900} planName="Dissertation Pass" className="border border-line-strong px-6 py-3 text-sm font-bold hover:border-ink">
           ₹199 Dissertation Pass (3 months)
-        </a>
+        </RazorpayButton>
       </div>
       <button onClick={onNew} className="mt-6 font-mono text-[0.75rem] text-ink-soft hover:text-ink">
         ← Start a new analysis (free)

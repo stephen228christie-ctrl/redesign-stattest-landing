@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import AppNav from "@/components/AppNav";
+import RazorpayButton from "@/components/RazorpayButton";
 import { sb, FREE_LIMIT } from "@/lib/supabase";
-
-const UPGRADE_URL = "https://stattest-landing.vercel.app/upgrade.html";
 
 interface Profile {
   name?: string;
@@ -149,12 +148,12 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <a href={UPGRADE_URL} className="bg-paper px-5 py-3 text-sm font-bold text-ink hover:bg-white">
+                <RazorpayButton amount={9900} planName="Pro Monthly" className="bg-paper px-5 py-3 text-sm font-bold text-ink hover:bg-white">
                   Upgrade — ₹99/mo
-                </a>
-                <a href={UPGRADE_URL} className="border border-paper/30 px-5 py-3 text-sm font-bold hover:border-paper">
+                </RazorpayButton>
+                <RazorpayButton amount={19900} planName="Dissertation Pass" className="border border-paper/30 px-5 py-3 text-sm font-bold hover:border-paper">
                   ₹199 pass
-                </a>
+                </RazorpayButton>
               </div>
             </div>
           </div>
