@@ -8,9 +8,14 @@ type Tab = "login" | "signup" | "forgot";
 
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-// Always use the explicit new site URL — never window.location.origin
-// because Supabase ignores emailRedirectTo if it doesn't match the Site URL
-const CALLBACK = `${SITE_URL}/auth/callback`;
+// Use the current origin so localhost auth stays on localhost. Falls back to
+// SITE_URL during SSR. Each origin used here (including http://localhost:3000)
+// must be in Supabase Auth → URL Configuration → Redirect URLs, or Supabase
+// ignores it and falls back to the project Site URL.
+const CALLBACK =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/auth/callback`
+    : `${SITE_URL}/auth/callback`;
 
 function strength(val: string) {
   let score = 0;
