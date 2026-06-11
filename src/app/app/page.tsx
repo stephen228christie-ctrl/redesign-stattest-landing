@@ -357,10 +357,10 @@ function Paywall({ test, onNew }: { test: TestInfo; onNew: () => void }) {
         )}
       </ul>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <RazorpayButton amount={9900} planName="Pro Monthly" className="bg-ink px-6 py-3 text-sm font-bold text-paper hover:bg-night-soft">
+        <RazorpayButton plan="pro" planName="Pro Monthly" className="bg-ink px-6 py-3 text-sm font-bold text-paper hover:bg-night-soft">
           Upgrade — ₹99/month
         </RazorpayButton>
-        <RazorpayButton amount={19900} planName="Dissertation Pass" className="border border-line-strong px-6 py-3 text-sm font-bold hover:border-ink">
+        <RazorpayButton plan="pass" planName="Dissertation Pass" className="border border-line-strong px-6 py-3 text-sm font-bold hover:border-ink">
           ₹199 Dissertation Pass (3 months)
         </RazorpayButton>
       </div>

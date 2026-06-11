@@ -16,7 +16,7 @@ declare global {
 }
 
 interface Props {
-  amount: number; // in paise
+  plan: "pro" | "pass"; // priced server-side in lib/plans.ts
   planName: string;
   className?: string;
   children: React.ReactNode;
@@ -36,7 +36,7 @@ function loadScript(src: string): Promise<boolean> {
   });
 }
 
-export default function RazorpayButton({ amount, planName, className, children }: Props) {
+export default function RazorpayButton({ plan, planName, className, children }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,9 +55,6 @@ export default function RazorpayButton({ amount, planName, className, children }
       return;
     }
 
-    // Map the plan to the code stored in the profiles table.
-    const plan = planName.toLowerCase().includes("pass") ? "pass" : "pro";
-
     const loaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
     if (!loaded) {
       setError("Failed to load payment gateway. Please try again.");
@@ -69,7 +66,7 @@ export default function RazorpayButton({ amount, planName, className, children }
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, receipt: `plan_${planName}_${Date.now()}` }),
+        body: JSON.stringify({ plan }),
       });
 
       if (!res.ok) {
@@ -98,7 +95,6 @@ export default function RazorpayButton({ amount, planName, className, children }
               body: JSON.stringify({
                 ...response,
                 access_token: session.access_token,
-                plan,
               }),
             });
             const result = await verify.json();

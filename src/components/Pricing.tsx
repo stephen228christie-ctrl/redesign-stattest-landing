@@ -10,7 +10,7 @@ const tiers = [
     cta: "Start for free",
     href: "/login?tab=signup",
     featured: false,
-    amountPaise: null,
+    plan: null,
     items: [
       ["Full test selector", true],
       ['"Why this test?" explanation', true],
@@ -28,7 +28,7 @@ const tiers = [
     cta: "Get Pro — ₹99/mo",
     href: null,
     featured: true,
-    amountPaise: 9900,
+    plan: "pro" as const,
     items: [
       ["Everything in Free", true],
       ["AI stats assistant", true],
@@ -46,7 +46,7 @@ const tiers = [
     cta: "Get Pass — ₹199",
     href: null,
     featured: false,
-    amountPaise: 19900,
+    plan: "pass" as const,
     items: [
       ["Everything in Pro", true],
       ["3 months — no renewal", true],
@@ -128,9 +128,9 @@ export default function Pricing() {
                   ))}
                 </ul>
                 <div className="mt-8">
-                  {t.amountPaise ? (
+                  {t.plan ? (
                     <RazorpayButton
-                      amount={t.amountPaise}
+                      plan={t.plan}
                       planName={t.name}
                       className={`w-full px-5 py-3 text-center text-[0.92rem] font-bold transition-colors ${
                         t.featured

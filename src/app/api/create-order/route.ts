@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import { PLANS, isPlanId } from "@/lib/plans";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = rateLimit(`order:${clientIp(req)}`, 10, 60_000);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } }
+      );
+    }
+
     // Built lazily so a missing env var fails this request, not the whole build.
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       return NextResponse.json(
@@ -15,19 +25,18 @@ export async function POST(req: NextRequest) {
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
 
-    const { amount, currency = "INR", receipt } = await req.json();
-
-    if (!amount || amount < 100) {
-      return NextResponse.json(
-        { error: "Amount must be at least 100 paise" },
-        { status: 400 }
-      );
+    // The client picks a plan; the price comes from the server-side table.
+    // Never accept an amount from the browser.
+    const { plan } = await req.json();
+    if (!isPlanId(plan)) {
+      return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
     }
 
     const order = await razorpay.orders.create({
-      amount,
-      currency,
-      receipt: receipt ?? `receipt_${Date.now()}`,
+      amount: PLANS[plan].amount,
+      currency: "INR",
+      receipt: `plan_${plan}_${Date.now()}`,
+      notes: { plan },
     });
 
     return NextResponse.json({

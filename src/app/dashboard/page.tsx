@@ -148,10 +148,10 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <RazorpayButton amount={9900} planName="Pro Monthly" className="bg-paper px-5 py-3 text-sm font-bold text-ink hover:bg-white">
+                <RazorpayButton plan="pro" planName="Pro Monthly" className="bg-paper px-5 py-3 text-sm font-bold text-ink hover:bg-white">
                   Upgrade — ₹99/mo
                 </RazorpayButton>
-                <RazorpayButton amount={19900} planName="Dissertation Pass" className="border border-paper/30 px-5 py-3 text-sm font-bold hover:border-paper">
+                <RazorpayButton plan="pass" planName="Dissertation Pass" className="border border-paper/30 px-5 py-3 text-sm font-bold hover:border-paper">
                   ₹199 pass
                 </RazorpayButton>
               </div>
