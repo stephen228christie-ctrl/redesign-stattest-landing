@@ -5,10 +5,12 @@ import type { User } from "@supabase/supabase-js";
 import AppNav from "@/components/AppNav";
 import RazorpayButton from "@/components/RazorpayButton";
 import { sb, FREE_LIMIT } from "@/lib/supabase";
+import { planIsActive } from "@/lib/plan-utils";
 
 interface Profile {
   name?: string;
   plan?: string;
+  plan_expires_at?: string | null;
   created_at?: string;
 }
 
@@ -61,6 +63,34 @@ export default function Dashboard() {
     window.location.href = "/login";
   }
 
+  async function deleteAccount() {
+    if (
+      !confirm(
+        "Delete your account? This permanently removes your profile and all saved analyses. This cannot be undone."
+      )
+    )
+      return;
+    if (!confirm("Are you absolutely sure? Your data cannot be recovered.")) return;
+
+    const {
+      data: { session },
+    } = await sb.auth.getSession();
+    if (!session) return;
+
+    const res = await fetch("/api/delete-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: session.access_token }),
+    });
+    if (res.ok) {
+      await sb.auth.signOut();
+      window.location.href = "/";
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "Could not delete account. Please contact support.");
+    }
+  }
+
   if (loading || !user) {
     return (
       <div className="graph-field min-h-screen">
@@ -74,8 +104,11 @@ export default function Dashboard() {
 
   const name = profile?.name || user.email!.split("@")[0];
   const firstName = name.split(" ")[0];
-  const plan = profile?.plan || "free";
-  const isPro = plan !== "free";
+  const isPro = planIsActive(profile);
+  const plan = isPro ? profile!.plan! : "free";
+  const planDaysLeft = profile?.plan_expires_at
+    ? Math.max(0, Math.ceil((new Date(profile.plan_expires_at).getTime() - Date.now()) / 86400000))
+    : null;
   const remain = Math.max(0, FREE_LIMIT - total);
   const h = new Date().getHours();
   const greet = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
@@ -86,7 +119,10 @@ export default function Dashboard() {
     { k: String(total), v: "analyses run" },
     { k: isPro ? "∞" : String(remain), v: isPro ? "unlimited analyses" : "free analyses left" },
     { k: String(days), v: "days since joined" },
-    { k: isPro ? (plan === "pass" ? "Pass" : "Pro") : "Free", v: "current plan" },
+    {
+      k: isPro ? (plan === "pass" ? "Pass" : "Pro") : "Free",
+      v: isPro && planDaysLeft !== null ? `current plan · ${planDaysLeft}d left` : "current plan",
+    },
   ];
 
   return (
@@ -259,6 +295,12 @@ export default function Dashboard() {
                 className="mt-5 w-full border border-line-strong py-2.5 text-sm font-bold text-ink-soft hover:border-sig hover:text-sig"
               >
                 Sign out
+              </button>
+              <button
+                onClick={deleteAccount}
+                className="mt-3 w-full py-2 font-mono text-[0.72rem] text-ink-soft/60 underline-offset-2 hover:text-sig hover:underline"
+              >
+                Delete my account and all data
               </button>
             </div>
           </aside>

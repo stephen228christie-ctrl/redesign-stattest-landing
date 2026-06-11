@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase";
 import { PLANS, isPlanId } from "@/lib/plans";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
@@ -27,16 +29,31 @@ export async function POST(req: NextRequest) {
 
     // The client picks a plan; the price comes from the server-side table.
     // Never accept an amount from the browser.
-    const { plan } = await req.json();
+    const { plan, access_token } = await req.json();
     if (!isPlanId(plan)) {
       return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
+    }
+
+    // Orders are tied to a logged-in buyer so the webhook can activate the
+    // plan even if the browser dies before verify-payment runs.
+    if (!access_token) {
+      return NextResponse.json({ error: "Sign in to upgrade" }, { status: 401 });
+    }
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+    });
+    const {
+      data: { user },
+    } = await authClient.auth.getUser(access_token);
+    if (!user) {
+      return NextResponse.json({ error: "Sign in to upgrade" }, { status: 401 });
     }
 
     const order = await razorpay.orders.create({
       amount: PLANS[plan].amount,
       currency: "INR",
       receipt: `plan_${plan}_${Date.now()}`,
-      notes: { plan },
+      notes: { plan, user_id: user.id },
     });
 
     return NextResponse.json({

@@ -37,7 +37,10 @@ export function Footer() {
         </p>
         <p className="font-mono text-[0.72rem]">
           Based on APA 7th edition &amp; Field (2018) guidelines · Made for
-          psychology students in India
+          psychology students in India ·{" "}
+          <a href="/privacy" className="underline underline-offset-2 hover:text-paper">
+            Privacy
+          </a>
         </p>
       </div>
     </footer>

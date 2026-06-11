@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase";
 import { PLANS, isPlanId } from "@/lib/plans";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { activatePlan } from "@/lib/activate-plan";
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,7 +57,11 @@ export async function POST(req: NextRequest) {
         { status: 200 }
       );
     }
-    const order: { amount: number; notes?: { plan?: string } } = await orderRes.json();
+    const order: {
+      amount: number;
+      currency: string;
+      notes?: { plan?: string; user_id?: string };
+    } = await orderRes.json();
     const plan = order.notes?.plan;
 
     if (!isPlanId(plan) || PLANS[plan].amount !== order.amount) {
@@ -66,46 +71,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (access_token) {
-      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      if (!serviceKey) {
-        return NextResponse.json(
-          { success: true, plan_updated: false, warning: "Server not configured for plan activation" },
-          { status: 200 }
-        );
-      }
+    // Identify the buyer from their session token and require that it is the
+    // same user the order was created for.
+    if (!access_token) {
+      return NextResponse.json(
+        { success: true, plan_updated: false, warning: "Not signed in" },
+        { status: 200 }
+      );
+    }
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+    });
+    const {
+      data: { user },
+    } = await authClient.auth.getUser(access_token);
 
-      // Validate the token with the public client to learn *who* paid. This
-      // only reads identity; it cannot write the plan (RLS forbids that).
-      const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: false },
-      });
-      const {
-        data: { user },
-      } = await authClient.auth.getUser(access_token);
+    if (!user || user.id !== order.notes?.user_id) {
+      return NextResponse.json(
+        { success: true, plan_updated: false, warning: "Order belongs to a different account" },
+        { status: 200 }
+      );
+    }
 
-      if (user) {
-        // Perform the actual plan write with the service-role key, which
-        // bypasses RLS. Because this key lives only on the server and runs
-        // only after the signature check above, a verified payment is the
-        // sole way a user can become 'pro'/'pass' — the browser is never
-        // trusted to set its own plan.
-        const admin = createClient(SUPABASE_URL, serviceKey, {
-          auth: { persistSession: false },
-        });
+    const result = await activatePlan({
+      userId: user.id,
+      plan,
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      amount: order.amount,
+      currency: order.currency ?? "INR",
+      source: "verify",
+    });
 
-        const { error: updateError } = await admin
-          .from("profiles")
-          .update({ plan })
-          .eq("id", user.id);
-
-        if (updateError) {
-          return NextResponse.json(
-            { success: true, plan_updated: false, warning: updateError.message },
-            { status: 200 }
-          );
-        }
-      }
+    if (!result.ok) {
+      return NextResponse.json(
+        { success: true, plan_updated: false, warning: result.warning },
+        { status: 200 }
+      );
     }
 
     return NextResponse.json({

@@ -66,7 +66,7 @@ export default function RazorpayButton({ plan, planName, className, children }: 
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, access_token: session.access_token }),
       });
 
       if (!res.ok) {

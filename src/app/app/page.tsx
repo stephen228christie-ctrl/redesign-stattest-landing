@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import AppNav from "@/components/AppNav";
 import RazorpayButton from "@/components/RazorpayButton";
 import { sb, FREE_LIMIT } from "@/lib/supabase";
+import { planIsActive } from "@/lib/plan-utils";
 import {
   Answers,
   QS,
@@ -53,7 +54,7 @@ export default function QuizApp() {
           .select("*")
           .eq("id", session.user.id)
           .single();
-        setIsPro(profile?.plan === "pro" || profile?.plan === "pass");
+        setIsPro(planIsActive(profile));
         const { count: c } = await sb
           .from("analyses")
           .select("*", { count: "exact", head: true })

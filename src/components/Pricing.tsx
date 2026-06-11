@@ -24,7 +24,7 @@ const tiers = [
     name: "Pro Monthly",
     price: "₹99",
     cadence: "/mo",
-    note: "Cancel anytime. Instant access.",
+    note: "30 days of Pro. No auto-renewal — top up only if you want.",
     cta: "Get Pro — ₹99/mo",
     href: null,
     featured: true,
