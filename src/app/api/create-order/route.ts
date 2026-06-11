@@ -36,7 +36,18 @@ export async function POST(req: NextRequest) {
       currency: order.currency,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to create order";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // The Razorpay SDK rejects with a plain object ({ statusCode, error: {...} }),
+    // not an Error instance — so surface its actual description instead of a
+    // generic message, and mirror its status code (e.g. 401 on bad keys).
+    let message = "Failed to create order";
+    let status = 500;
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (err && typeof err === "object") {
+      const e = err as { statusCode?: number; error?: { description?: string } };
+      message = e.error?.description ?? message;
+      status = e.statusCode ?? status;
+    }
+    return NextResponse.json({ error: message }, { status });
   }
 }
