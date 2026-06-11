@@ -3,6 +3,18 @@
 import { useEffect } from "react";
 import { sb } from "@/lib/supabase";
 
+// Where to land after auth. The login page stashes the user's intended
+// destination (e.g. /app mid-quiz) in localStorage before redirecting out.
+// Only same-site paths are honored, so a tampered value can't redirect away.
+function destination(): string {
+  try {
+    const r = localStorage.getItem("st_return");
+    localStorage.removeItem("st_return");
+    if (r && r.startsWith("/") && !r.startsWith("//")) return r;
+  } catch {}
+  return "/dashboard";
+}
+
 export default function AuthCallback() {
   useEffect(() => {
     async function handle() {
@@ -15,7 +27,7 @@ export default function AuthCallback() {
       const code = params.get("code");
       if (code) {
         const { error } = await sb.auth.exchangeCodeForSession(code);
-        if (!error) { window.location.replace("/dashboard"); return; }
+        if (!error) { window.location.replace(destination()); return; }
       }
 
       // Implicit hash flow — supabase-js picks it up via detectSessionInUrl
@@ -24,14 +36,14 @@ export default function AuthCallback() {
         // Poll briefly — supabase-js processes the hash asynchronously
         for (let i = 0; i < 10; i++) {
           const { data } = await sb.auth.getSession();
-          if (data.session) { window.location.replace("/dashboard"); return; }
+          if (data.session) { window.location.replace(destination()); return; }
           await new Promise((r) => setTimeout(r, 150));
         }
       }
 
       // Fallback — check if a session already exists (e.g. auto-confirm)
       const { data } = await sb.auth.getSession();
-      if (data.session) { window.location.replace("/dashboard"); return; }
+      if (data.session) { window.location.replace(destination()); return; }
 
       // Nothing worked — send back to login
       window.location.replace("/login");

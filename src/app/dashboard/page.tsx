@@ -154,8 +154,9 @@ export default function Dashboard() {
           <dl className="grid grid-cols-2 gap-y-6 pt-6 sm:grid-cols-4">
             {stats.map((s) => (
               <div key={s.v}>
+                <dt className="sr-only">{s.v}</dt>
                 <dd className="font-display text-3xl font-semibold">{s.k}</dd>
-                <dt className="mt-1 text-sm text-ink-soft">{s.v}</dt>
+                <dd className="mt-1 text-sm text-ink-soft">{s.v}</dd>
               </div>
             ))}
           </dl>

@@ -18,8 +18,8 @@ const faqs = [
     a: "Absolutely. The tool is designed for UG dissertation projects as much as postgrad ones. The explanations avoid unnecessary jargon, and the free tier covers everything a standard UG project needs.",
   },
   {
-    q: "Can I cancel the monthly plan anytime?",
-    a: "Yes — cancel any time, no questions asked. Most students use the 3-month Dissertation Pass since it's one payment with no renewal stress.",
+    q: "Will I get charged again automatically?",
+    a: "Never — there's nothing to cancel because there's no subscription. Plans are prepaid passes: ₹99 buys 30 days of Pro, ₹199 buys 90 days. When the time runs out you simply drop back to the free tier. We don't store any payment method, so we couldn't auto-charge you even if we wanted to.",
   },
 ];
 

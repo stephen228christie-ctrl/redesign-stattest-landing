@@ -100,7 +100,14 @@ function LoginInner() {
     setForgotSent(false); setSignupSent(false);
   }
 
+  // Remember where to land after the auth callback (OAuth round-trip or
+  // email-confirmation link), since the callback page has no query context.
+  function rememberReturn() {
+    try { localStorage.setItem("st_return", returnUrl); } catch {}
+  }
+
   async function handleGoogle() {
+    rememberReturn();
     const { error } = await sb.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: CALLBACK },
@@ -125,6 +132,7 @@ function LoginInner() {
     };
     setErrors(errs);
     if (Object.values(errs).some(Boolean)) return;
+    rememberReturn();
     setBusy(true);
     const { data, error } = await sb.auth.signUp({
       email, password: pw,
@@ -227,25 +235,25 @@ function LoginInner() {
                 )}
 
                 {tab === "login" ? (
-                  <div className="space-y-4">
+                  <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
                     <Field label="Email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
                     <Field label="Password" type="password" value={pw} onChange={setPw} autoComplete="current-password" />
                     <div className="text-right">
-                      <button onClick={() => switchTab("forgot")} className="font-mono text-[0.72rem] text-plot hover:underline">
+                      <button type="button" onClick={() => switchTab("forgot")} className="font-mono text-[0.72rem] text-plot hover:underline">
                         Forgot password?
                       </button>
                     </div>
-                    <button onClick={handleLogin} disabled={busy}
+                    <button type="submit" disabled={busy}
                       className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50">
                       {busy ? "Logging in…" : "Log in"}
                     </button>
                     <p className="text-center text-sm text-ink-soft">
                       Don&rsquo;t have an account?{" "}
-                      <button onClick={() => switchTab("signup")} className="font-bold text-plot hover:underline">Sign up free</button>
+                      <button type="button" onClick={() => switchTab("signup")} className="font-bold text-plot hover:underline">Sign up free</button>
                     </p>
-                  </div>
+                  </form>
                 ) : (
-                  <div className="space-y-4">
+                  <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSignup(); }}>
                     <div className="grid grid-cols-2 gap-3">
                       <Field label="First name" value={first} onChange={setFirst} error={errors.first} autoComplete="given-name" />
                       <Field label="Last name" value={last} onChange={setLast} autoComplete="family-name" />
@@ -262,18 +270,21 @@ function LoginInner() {
                         </p>
                       )}
                     </div>
-                    <button onClick={handleSignup} disabled={busy}
+                    <button type="submit" disabled={busy}
                       className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50">
                       {busy ? "Creating account…" : "Create free account"}
                     </button>
                     <p className="text-center text-xs text-ink-soft">
-                      By signing up you agree to our Terms of Service and Privacy Policy.
+                      By signing up you agree to our{" "}
+                      <a href="/privacy" className="underline underline-offset-2 hover:text-ink">
+                        Privacy Policy
+                      </a>.
                     </p>
                     <p className="text-center text-sm text-ink-soft">
                       Already have an account?{" "}
-                      <button onClick={() => switchTab("login")} className="font-bold text-plot hover:underline">Log in</button>
+                      <button type="button" onClick={() => switchTab("login")} className="font-bold text-plot hover:underline">Log in</button>
                     </p>
-                  </div>
+                  </form>
                 )}
               </>
 
@@ -287,13 +298,13 @@ function LoginInner() {
                     <h1 className="mt-4 font-display text-3xl font-semibold">Reset your password</h1>
                     <p className="mt-2 text-sm text-ink-soft">Enter your email and we&rsquo;ll send a reset link.</p>
                     {alert && <p role="alert" className="mt-4 border-l-2 border-sig bg-sig/5 px-3.5 py-2.5 text-sm">{alert}</p>}
-                    <div className="mt-6 space-y-4">
+                    <form className="mt-6 space-y-4" onSubmit={(e) => { e.preventDefault(); handleForgot(); }}>
                       <Field label="Email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
-                      <button onClick={handleForgot} disabled={busy}
+                      <button type="submit" disabled={busy}
                         className="w-full bg-ink px-5 py-3 text-sm font-bold text-paper hover:bg-night-soft disabled:opacity-50">
                         {busy ? "Sending…" : "Send reset link"}
                       </button>
-                    </div>
+                    </form>
                   </>
                 ) : (
                   <div className="mt-4 text-center">

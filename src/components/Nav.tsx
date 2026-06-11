@@ -40,7 +40,7 @@ export default function Nav() {
         </nav>
 
         <button
-          className="md:hidden font-mono text-sm"
+          className="-m-2 p-2 md:hidden font-mono text-sm"
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen(!open)}
