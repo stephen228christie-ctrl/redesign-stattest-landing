@@ -4,10 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { sb } from "@/lib/supabase";
 
+interface RazorpayInstance {
+  open(): void;
+  on(event: string, cb: (resp: { error: { description: string } }) => void): void;
+}
+
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Razorpay: any;
+    Razorpay: new (options: Record<string, unknown>) => RazorpayInstance;
   }
 }
 
