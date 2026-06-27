@@ -28,9 +28,11 @@ create policy "Users can insert own profile"
   on public.profiles for insert
   to authenticated with check (auth.uid() = id);
 
-create policy "Users can update own profile"
-  on public.profiles for update
-  to authenticated using (auth.uid() = id) with check (auth.uid() = id);
+-- NOTE: there is deliberately NO "update" policy for profiles. The plan and
+-- plan_expires_at columns must only ever be changed by the server (service
+-- role, which bypasses RLS) after a verified Razorpay payment. Granting users
+-- update access would let anyone set their own plan to 'pro' for free. The
+-- drop above stays so re-running this file removes any such policy.
 
 -- ---------------------------------------------------------------------------
 -- analyses: saved test-selector results, used by the dashboard history and
